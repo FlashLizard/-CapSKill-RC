@@ -5,7 +5,7 @@
 启动：
 
 ```powershell
-cd E:\code\skillsbench-test\skillsbench
+cd <cloned-repository>
 $env:DEEPSEEK_API_KEY = '<your-deepseek-api-key>'
 node runner-app/server.mjs
 ```
@@ -19,7 +19,8 @@ http://localhost:5198
 功能：
 
 - 选择 `claude-agent-acp`、`openhands`、`opencode`、`codex-acp` 等 harness。
-- 设置模型、Base URL、API key、重复次数、并行度、skill mode 和 skills 库。
+- 设置模型、供应商协议、Base URL、API key、重复次数、并行度、`no-skill` / `with-skill` / `force-skill` 和 skills 库。
+- Claude Code 的自定义供应商需要提供 Anthropic Messages 兼容入口；页面还支持 reasoning effort 设置。
 - 对 `bike-rebalance`，可在 `initial`、`s0-repaired`、`mip` 三套 skills 库之间切换；默认使用 `initial`。
 - 实时查看每个 run 的 stdout/stderr 日志。
 - 扫描 `jobs/**/summary.json`，点选历史结果查看 score、token、耗时、skills 库、artifact 路径和完整 summary。
@@ -41,11 +42,7 @@ Model: gpt-5.5
 Weak model: deepseek-v4-flash
 ```
 
-更多 CLI 和验证说明见：
-
-```text
-docs/skill-repair-pipeline/README.md
-```
+更多 CLI 和验证说明见根目录 `README.md` 与 `offline_skill_rca/README.md`。
 
 可选端口：
 

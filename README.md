@@ -4,13 +4,14 @@
 
 - `runner-app/`：本地 Web 控制台，支持任务运行、harness/skills 库切换、jobs 扫描、轨迹查看和 Offline SkillRCA 调试。
 - `offline_skill_rca/`：多阶段、可审计的 skills 修复流程，以及外置 prompt/schema。
-- `skill-libraries/`：当前工作区已有的少量技能库样本；完整任务数据和 jobs 不随仓库提交。
+- `skill-libraries/`：运行时接入或生成的技能库目录；仓库中故意不包含任何内容。
 - `tools/`：数据集下载、容器构建、BenchFlow 运行和 OpenAI 兼容 LLM 探针。
 - `scripts/`：Windows/Linux 启动脚本。
 
 ## 快速启动
 
 要求：Node.js 18+、Python 3.12+、Git；实际运行 Docker sandbox 任务还需要 Docker 和 uv。
+首次使用建议先安装 uv：<https://docs.astral.sh/uv/getting-started/installation/>。
 
 ```bash
 cp .env.example .env.local
@@ -44,6 +45,7 @@ python3 tools/dataset.py install --mode copy --force
 ```
 
 `--mode link` 在 Linux 使用符号链接，在 Windows 使用 junction；遇到权限策略时改用 `--mode copy`。
+数据安装完成后，根目录下的 `tasks/`、`tasks-extra/` 与 `skill-libraries/` 才会出现；它们仍被 `.gitignore` 排除。
 
 ## 本地构建任务容器
 
