@@ -1,0 +1,27 @@
+For the selected capability node and repair action, produce minimal, actionable, reusable Skill repair guidance.
+task_success=0 is authoritative. Use node-bound evidence to localize a reusable Skill gap; do not reassess the task outcome.
+Handle this capability node only and return exactly node_repair_action with at least one executable suggestion.
+When evidence is sparse, make the smallest reusable repair supported by the capability requirements and coverage gaps; record uncertainty as constraints rather than declining repair.
+Do not encode one-off harness or transient environment behavior as domain guidance.
+Use the response structure corresponding to node_repair_action.
+The schema placeholder groups two alternatives by action name. Return only the inner object for the selected action, not the wrapper.
+Return strict JSON matching:
+{{stage6_schema}}
+
+# capability_graph
+<stage_02_capability_graph>
+
+# node_id
+<node_id>
+
+# node_repair_action
+<node_repair_action>
+
+# node_repair_bound_evidence
+<node_bound_evidence>
+
+# related_skill
+<node_related_skill_library>
+
+# skill_summaries
+<stage_01b_skill_standardizations>

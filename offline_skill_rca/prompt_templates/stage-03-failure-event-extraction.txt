@@ -1,0 +1,20 @@
+Using only the task contract, formatted trajectory, visible failure result, and captured final artifacts, extract concrete failure events and the earlier events that caused or contributed to them.
+success=0 is authoritative: the rollout failed. Never reassess it from agent self-reports or missing verifier details.
+Keep failure events separate from cause events. Link them only when the supplied evidence supports the causal relation.
+Treat runtime/test output and captured artifacts as observations.
+Do not invent a defect from success=0 alone. If it cannot be localized, record that limit in evidence_limits.
+Do not present speculation as fact.
+Return strict JSON matching:
+{{trace_analysis_schema}}
+
+# task_contract
+<stage_01a_task_description_standardization>
+
+# trajectory
+<trajectory>
+
+# visible_failure_result
+<visible_failure_result>
+
+# captured_final_artifacts
+<final_artifacts>

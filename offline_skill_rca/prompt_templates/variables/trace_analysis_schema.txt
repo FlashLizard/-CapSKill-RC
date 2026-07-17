@@ -1,0 +1,39 @@
+{
+  "traj_id": "string",
+  "success": 0,
+  "failure_events": [
+    {
+      "event_id": "string",
+      "step_ids": [1],
+      "observed_behavior": "string",
+      "expected_behavior": "string",
+      "failure_signal": "string",
+      "downstream_consequence": "string",
+      "severity": "minor|major|fatal",
+      "evidence_refs": [
+        {"source": "trajectory_step|failure_result|final_artifact", "ref": "string", "excerpt": "string"}
+      ]
+    }
+  ],
+  "cause_events": [
+    {
+      "event_id": "string",
+      "step_ids": [1],
+      "observed_behavior": "string",
+      "role": "direct|contributing|enabling",
+      "evidence_refs": [
+        {"source": "trajectory_step|failure_result|final_artifact", "ref": "string", "excerpt": "string"}
+      ]
+    }
+  ],
+  "causal_links": [
+    {
+      "cause_event_id": "string",
+      "failure_event_id": "string",
+      "relation": "direct|contributing|enabling",
+      "confidence": 0.0,
+      "reason": "string"
+    }
+  ],
+  "evidence_limits": []
+}

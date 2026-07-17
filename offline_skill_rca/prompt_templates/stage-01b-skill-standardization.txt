@@ -1,0 +1,10 @@
+Extract visible capabilities from this Skill document and its attached files only. Do not score quality or infer undocumented behavior.
+Return attached_files as null when no attached files are supplied.
+Return strict JSON matching:
+{{skill_standardization_schema}}
+
+# skill_file
+<skill_file>
+
+# skill_attached_files
+<skill_attached_files>

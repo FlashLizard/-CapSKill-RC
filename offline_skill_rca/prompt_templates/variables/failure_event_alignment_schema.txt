@@ -1,0 +1,12 @@
+{
+  "alignments": [
+    {
+      "traj_id": "string",
+      "event_id": "string",
+      "event_kind": "failure|cause",
+      "node_id": "N1|null",
+      "confidence": 0.0,
+      "reason": "string"
+    }
+  ]
+}

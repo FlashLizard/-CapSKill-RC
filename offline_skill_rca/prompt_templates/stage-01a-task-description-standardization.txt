@@ -1,0 +1,6 @@
+Extract the task contract from task_description only. Do not solve the task or add unstated requirements.
+Return strict JSON matching:
+{{task_standardization_schema}}
+
+# task_description
+<task_description>

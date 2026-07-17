@@ -1,0 +1,49 @@
+Review the repair suggestion first, then review the candidate files only if the suggestion is valid.
+Use the capability nodes, agent-only evidence, node execution context, coverage context, Skill inventory, and related Skill summaries to decide whether the suggestion is evidence-supported, capability-correct, reusable, and non-duplicative.
+Do not assume a suggestion is correct merely because the candidate follows it. Reject task-specific answers, unsupported domain rules, harness-specific transient tool protocols, and changes contradicted by the capability requirements or evidence.
+Local path, identity, completeness, and size validation has already passed. Do not rewrite files.
+Decision rules:
+- accept: the suggestion is valid and every candidate check is true; issues and retry_instructions are empty.
+- reject_candidate: the suggestion is valid but the candidate is wrong or incomplete; include actionable retry_instructions.
+- reject_suggestion: the suggestion itself is unsupported, incorrect, non-reusable, duplicative, or conflicting; include issues and leave retry_instructions empty.
+Return strict JSON matching:
+{{stage8_review_schema}}
+
+# claude_code_skill_spec
+{{claude_code_skill_spec}}
+
+# repair_unit_id
+<repair_unit_id>
+
+# suggestion_ids
+<suggestion_ids>
+
+# selected_suggestions
+<selected_stage6_suggestions>
+
+# files_before_this_attempt
+<files_before_this_attempt>
+
+# candidate_modified_files
+<candidate_modified_files>
+
+# current_skill_library_inventory
+<current_skill_library_inventory>
+
+# related_skill_summaries
+<related_skill_summaries>
+
+# capability_nodes
+<capability_nodes>
+
+# suggestion_evidence
+<suggestion_evidence>
+
+# node_execution_context
+<node_execution_context>
+
+# coverage_context
+<coverage_context>
+
+# skill_word_limit
+<skill_word_limit>

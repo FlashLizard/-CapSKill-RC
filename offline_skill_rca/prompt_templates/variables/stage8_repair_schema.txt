@@ -1,0 +1,10 @@
+{
+  "repair_unit_id": "must equal the provided repair_unit_id",
+  "suggestion_ids": ["must contain every provided suggestion id in the same order"],
+  "files": [
+    {
+      "path": "path relative to the copied skill-library root",
+      "content": "complete final file content"
+    }
+  ]
+}

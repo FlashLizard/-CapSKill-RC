@@ -1,0 +1,33 @@
+{
+  "capability_graph": {
+    "nodes": [
+      {
+        "node_id": "N1",
+        "goal": "string",
+        "inputs": [],
+        "outputs": [],
+        "operations": [],
+        "checks": []
+      }
+    ],
+    "edges": [{"from": "N1", "to": "N2", "description": "why N2 depends on N1"}]
+  },
+  "coverage_pairs": [
+    {
+      "node_id": "N1",
+      "skill_id": "string",
+      "directly_relevant": true,
+      "relevance_reason": "string",
+      "scores": {
+        "requirement_fit": 0.0,
+        "trigger": 0.0,
+        "procedure": 0.0,
+        "verification": 0.0,
+        "recovery": 0.0,
+        "execution_support": 0.0
+      },
+      "execution_support_need": "not_needed|helpful|required",
+      "evidence": []
+    }
+  ]
+}

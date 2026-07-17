@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trajectory Skill Analysis · SkillsBench Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="analysis-body">
+    <main class="analysis-shell">
+      <header class="trajectory-topbar">
+        <div>
+          <a class="back-link" href="/">返回任务面板</a>
+          <a class="back-link" href="/repair.html">Skills 修复</a>
+          <a class="back-link" href="/repair-trace.html">Repair LLM 轨迹</a>
+          <h1>轨迹 Skill 分析</h1>
+          <p id="analysisSubtitle">加载 task、trajectory 和可选 Judge LLM 配置后开始分析。</p>
+        </div>
+      </header>
+
+      <section class="analysis-config">
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>输入</h2>
+            <span id="contextStatus" class="muted"></span>
+          </div>
+          <div class="analysis-form-grid">
+            <label>
+              <span>Task</span>
+              <select id="analysisTaskSelect" class="input">
+                <option value="">自动推断 / 手动填写</option>
+              </select>
+            </label>
+            <label>
+              <span>Task 路径</span>
+              <input id="analysisTaskPath" class="input" placeholder="tasks/offer-letter-generator" />
+            </label>
+            <label class="wide">
+              <span>Trajectory 路径</span>
+              <input id="analysisTrajectoryPath" class="input" placeholder="jobs/.../trajectory/acp_trajectory.jsonl" />
+            </label>
+            <label>
+              <span>Artifact Dir</span>
+              <input id="analysisArtifactDir" class="input" placeholder="jobs/.../2026-..." />
+            </label>
+            <label>
+              <span>Rollout</span>
+              <input id="analysisRollout" class="input" placeholder="r2r-mpc-control__..." />
+            </label>
+            <label class="wide">
+              <span>Result 路径</span>
+              <input id="analysisResultPath" class="input" placeholder="可选，默认从 rollout 推断 result.json" />
+            </label>
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>Judge LLM</h2>
+            <label class="inline-check"><input id="judgeEnabled" type="checkbox" /> 启用</label>
+          </div>
+          <div class="analysis-form-grid judge-grid">
+            <label>
+              <span>协议</span>
+              <select id="judgeProvider" class="input">
+                <option value="anthropic">Anthropic</option>
+                <option value="openai">OpenAI</option>
+              </select>
+            </label>
+            <label>
+              <span>模型</span>
+              <input id="judgeModel" class="input" value="deepseek-v4-flash" />
+            </label>
+            <label class="wide">
+              <span>Base URL</span>
+              <input id="judgeBaseUrl" class="input" value="https://api.deepseek.com/anthropic" />
+            </label>
+            <label>
+              <span>Max tokens</span>
+              <input id="judgeMaxTokens" class="input" type="number" min="256" max="8000" value="1800" />
+            </label>
+            <label>
+              <span>关键词提取</span>
+              <select id="keywordMode" class="input">
+                <option value="rules">本地规则</option>
+                <option value="llm-task">LLM 总结 task</option>
+                <option value="llm-skills">LLM 总结 skills</option>
+                <option value="llm-both">LLM 总结 task + skills</option>
+              </select>
+            </label>
+            <label class="wide">
+              <span>API Key</span>
+              <input id="judgeApiKey" class="input" type="password" placeholder="仅本次请求使用，不保存" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <div class="analysis-actions">
+        <button id="loadAnalysisContext" class="secondary-button">加载上下文</button>
+        <button id="runAnalysis" class="primary-button">开始分析</button>
+      </div>
+
+      <section id="analysisOutput" class="analysis-output">
+        <div class="detail-empty">等待分析。</div>
+      </section>
+    </main>
+
+    <script src="/analysis.js" type="module"></script>
+  </body>
+</html>

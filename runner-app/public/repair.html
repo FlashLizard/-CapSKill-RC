@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Repair · SkillsBench Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="analysis-body">
+    <main class="analysis-shell repair-shell">
+      <header class="trajectory-topbar">
+        <div>
+          <a class="back-link" href="/">返回任务面板</a>
+          <a class="back-link" href="/repair-stage.html">Stage 调试</a>
+          <a class="back-link" href="/repair-trace.html">Repair LLM 轨迹</a>
+          <h1>Skills 库自动修复</h1>
+          <p id="repairSubtitle">从 task、skills 和已完成 jobs 轨迹生成新的 repaired skills variant。</p>
+        </div>
+      </header>
+
+      <section class="analysis-config">
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>输入</h2>
+            <span id="repairStatus" class="muted"></span>
+          </div>
+          <div class="analysis-form-grid">
+            <label>
+              <span>Task</span>
+              <select id="repairTaskSelect" class="input"></select>
+            </label>
+            <label>
+              <span>源 Skills 库</span>
+              <select id="repairSkillsLibrary" class="input"></select>
+            </label>
+            <label>
+              <span>输出 Variant</span>
+              <input id="repairVariant" class="input" placeholder="留空自动生成 auto-repair-..." />
+            </label>
+            <label>
+              <span>最多轨迹</span>
+              <input id="repairMaxRollouts" class="input" type="number" min="1" max="30" value="6" />
+            </label>
+            <label class="wide">
+              <span>证据 jobs / artifact / rollout 路径</span>
+              <textarea id="repairJobPaths" class="input textarea" placeholder="每行一个路径，例如 jobs/.../run-1/2026-... 或 jobs/.../summary.json"></textarea>
+            </label>
+            <label class="inline-check">
+              <input id="repairForce" type="checkbox" />
+              覆盖同名 variant
+            </label>
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>模型</h2>
+            <label class="inline-check"><input id="repairJudge" type="checkbox" /> 逐轨迹 Judge</label>
+          </div>
+          <div class="analysis-form-grid judge-grid">
+            <label>
+              <span>强模型协议</span>
+              <select id="repairStrongProvider" class="input">
+                <option value="anthropic">Anthropic</option>
+                <option value="openai">OpenAI</option>
+              </select>
+            </label>
+            <label>
+              <span>强模型</span>
+              <input id="repairStrongModel" class="input" value="gpt-5.5" />
+            </label>
+            <label class="wide">
+              <span>强模型 Base URL</span>
+              <input id="repairStrongBaseUrl" class="input" value="https://api.camel-hub.com" />
+            </label>
+            <label>
+              <span>弱模型</span>
+              <input id="repairWeakModel" class="input" value="deepseek-v4-flash" />
+            </label>
+            <label>
+              <span>关键词提取</span>
+              <select id="repairKeywordMode" class="input">
+                <option value="rules">本地规则</option>
+                <option value="llm-task">LLM 总结 task</option>
+                <option value="llm-skills">LLM 总结 skills</option>
+                <option value="llm-both">LLM 总结 task + skills</option>
+              </select>
+            </label>
+            <label>
+              <span>Max tokens</span>
+              <input id="repairStrongMaxTokens" class="input" type="number" min="512" max="32000" value="8000" />
+            </label>
+            <label>
+              <span>Timeout 秒</span>
+              <input id="repairStrongTimeout" class="input" type="number" min="10" max="900" value="240" />
+            </label>
+            <label class="wide">
+              <span>强模型 API Key</span>
+              <input id="repairStrongApiKey" class="input" type="password" placeholder="仅本次请求使用，不保存" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <div class="analysis-actions">
+        <button id="refreshRepair" class="secondary-button">刷新</button>
+        <button id="startRepair" class="primary-button">开始修复</button>
+      </div>
+
+      <section class="repair-grid">
+        <div class="analysis-card repair-list-card">
+          <div class="analysis-card-title"><h2>Repair Jobs</h2></div>
+          <div id="repairJobsList" class="repair-jobs-list"></div>
+          <div class="analysis-card-title repair-report-title"><h2>历史 Reports</h2></div>
+          <div id="repairReportsList" class="repair-jobs-list"></div>
+        </div>
+
+        <div class="analysis-card repair-detail-card">
+          <div class="analysis-card-title">
+            <h2 id="repairDetailTitle">详情</h2>
+            <button id="stopRepair" class="secondary-button">停止</button>
+          </div>
+          <div id="repairDetail" class="repair-detail">
+            <div class="detail-empty">选择或启动一个 repair job。</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/repair.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+Using the capability graph, align every failure event and every cause event to its single most relevant capability node; return null when an event is unrelated.
+Each event must appear exactly once. Keep event_kind as failure or cause. A cause event may align to an upstream node rather than the node containing its downstream failure.
+Return strict JSON matching:
+{{failure_event_alignment_schema}}
+
+# capability_graph
+<stage_02_capability_graph>
+
+# causal_failure_analyses_by_trace
+<stage_03_failure_events_by_trace>

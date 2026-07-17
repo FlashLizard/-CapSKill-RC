@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trajectory Viewer · SkillsBench Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="trajectory-body">
+    <main class="trajectory-shell">
+      <header class="trajectory-topbar">
+        <div>
+          <a class="back-link" href="/">返回任务面板</a>
+          <h1>轨迹查看</h1>
+          <p id="trajectoryPath">正在读取轨迹...</p>
+        </div>
+        <div class="trajectory-actions">
+          <a id="analyzeTrajectory" class="secondary-button" href="/analysis.html">分析轨迹</a>
+          <button id="reloadTrajectory" class="secondary-button">刷新</button>
+        </div>
+      </header>
+
+      <section id="trajectoryStats" class="trajectory-stats"></section>
+
+      <section class="trajectory-toolbar">
+        <input id="trajectorySearch" class="input" type="search" placeholder="搜索事件文本、标题、工具调用" />
+        <select id="trajectoryType" class="input">
+          <option value="">全部类型</option>
+        </select>
+        <select id="trajectoryStatus" class="input">
+          <option value="">全部状态</option>
+        </select>
+      </section>
+
+      <section class="trajectory-layout">
+        <div>
+          <div id="eventList" class="event-list"></div>
+        </div>
+        <aside id="eventDetail" class="event-detail">
+          选择左侧事件查看详情。
+        </aside>
+      </section>
+    </main>
+
+    <script src="/trajectory.js" type="module"></script>
+  </body>
+</html>

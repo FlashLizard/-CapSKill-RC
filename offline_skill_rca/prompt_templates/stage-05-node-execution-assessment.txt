@@ -1,0 +1,30 @@
+Using the capability graph, formatted trajectory, failure-causality analysis, and event-node alignments, assess each capability node in this trajectory.
+The task outcome is authoritative. For success=0, judge nodes locally without treating agent completion claims as overall success.
+
+Should apply a strict evidence standard. For every node:
+1. Copy every `operations` and `checks` item from that node exactly once into `requirement_audit`.
+2. Mark an item `satisfied` only when direct trajectory/tool/artifact evidence shows it was performed correctly. Include that evidence.
+3. Mark it `violated` when the trajectory visibly skips, contradicts, or substitutes a different operation or check.
+4. Mark it `unverified` when the evidence is absent or cannot establish correctness.
+5. If any material operation/check is violated, `fully_successful` must be false. If any is unverified, `fully_successful` cannot be true and `success_judgeable` is normally false.
+
+Then answer these four evidence questions:
+1. capability_presence: none, partial, full, or unknown.
+2. fully_successful: true, false, or null when evidence cannot establish it.
+3. prerequisites_satisfied: true, false, or null when evidence cannot establish it.
+4. success_judgeable: true only when the supplied evidence is sufficient to judge success.
+`fully_successful=true` is allowed only when every required operation and check is satisfied with direct evidence. Give evidence_refs and a concise reason for every answer.
+Return one assessment for every capability node and strict JSON matching:
+{{node_execution_assessment_schema}}
+
+# capability_graph
+<stage_02_capability_graph>
+
+# trajectory
+<trajectory>
+
+# failure_causality
+<stage_03_failure_causality>
+
+# event_node_alignments
+<stage_04_event_node_alignments>

@@ -1,0 +1,37 @@
+Modify or create the target Skill according to the current repair unit and return candidate files.
+Candidate files must contain complete final content for every modified file, never a diff. Write only under allowed_skill_root.
+Implement every suggestion and obey anti-overfit constraints, previous feedback, the size limit, and the Claude Code Skill contract below. Do not add task answers, verifier information, or trajectory constants.
+
+For add_new_skill, create exactly one valid Skill directory whose name matches the SKILL.md frontmatter name. For revise_existing_skill, preserve the target Skill identity and directory name. Whenever SKILL.md is returned, return the complete standards-compliant file, including YAML frontmatter and a non-empty Markdown body.
+Return strict JSON matching:
+{{stage8_repair_schema}}
+
+# claude_code_skill_spec
+{{claude_code_skill_spec}}
+
+# repair_unit_id
+<repair_unit_id>
+
+# suggestion_ids
+<suggestion_ids>
+
+# selected_suggestions
+<selected_stage6_suggestions>
+
+# repair_action
+<repair_action>
+
+# allowed_skill_root
+<allowed_skill_root>
+
+# current_related_files
+<current_related_files>
+
+# current_skill_library_inventory
+<current_skill_library_inventory>
+
+# previous_review_feedback
+<previous_review_feedback>
+
+# skill_word_limit
+<skill_word_limit>

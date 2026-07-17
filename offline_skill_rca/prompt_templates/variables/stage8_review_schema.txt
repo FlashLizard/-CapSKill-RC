@@ -1,0 +1,17 @@
+{
+  "repair_unit_id": "must equal the provided repair_unit_id",
+  "suggestion_ids": ["must contain every reviewed suggestion id in the same order"],
+  "decision": "accept|reject_candidate|reject_suggestion",
+  "checks": {
+    "suggestion_evidence_supported": true,
+    "suggestion_capability_correct": true,
+    "suggestion_reusable_skill_scope": true,
+    "candidate_satisfies_valid_suggestions": true,
+    "scope_preserved": true,
+    "files_usable": true,
+    "claude_code_compatible": true,
+    "library_consistent": true
+  },
+  "issues": [{"code": "string", "message": "string"}],
+  "retry_instructions": []
+}

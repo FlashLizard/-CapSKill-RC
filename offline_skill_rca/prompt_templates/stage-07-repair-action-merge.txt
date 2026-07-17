@@ -1,0 +1,14 @@
+Partition all add_new_skill repair actions into exactly merge_config.resolved_target_cluster_count semantic clusters. Enforce max_new_skill_count as a hard cap only when it is greater than zero.
+Each suggestion must appear exactly once. Select one existing suggestion as each root; do not add, remove, or rewrite suggestion IDs.
+Return clustering only; do not write Skill files.
+Return strict JSON matching:
+{{repair_action_merge_schema}}
+
+# merge_config
+<merge_config>
+
+# max_new_skill_count
+<max_new_skill_count>
+
+# add_new_skill_actions
+<add_new_skill_actions>

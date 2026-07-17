@@ -1,0 +1,9 @@
+{
+  "task_id": "string",
+  "summary": "string",
+  "inputs": [],
+  "required_outputs": [],
+  "constraints": [],
+  "success_criteria": [],
+  "ambiguities": []
+}

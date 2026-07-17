@@ -1,0 +1,13 @@
+Build the complete capability graph from the task contract. Use Skill summaries only for subsequent coverage analysis; they must not limit which capability nodes appear in the graph.
+The capability graph describes the capabilities required to complete the task. Each capability node is one concrete reusable capability, and an edge A -> B means B depends on A.
+Then analyze every coverage pair (capability node x Skill). Keep every task-required capability node even when no Skill covers it.
+Return one record for every coverage pair. Judge directly_relevant first: return null scores when it is false, and semantic scores plus evidence when it is true. If execution_support_need is not_needed, return null for scores.execution_support.
+Do not calculate overall coverage, gaps, labels, missing slots, or aggregates.
+Return strict JSON matching:
+{{stage2_schema}}
+
+# task_contract
+<stage_01a_task_description_standardization>
+
+# skill_summaries
+<stage_01b_skill_standardizations>

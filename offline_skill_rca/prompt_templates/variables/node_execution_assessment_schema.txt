@@ -1,0 +1,22 @@
+{
+  "traj_id": "string",
+  "node_assessments": [
+    {
+      "node_id": "N1",
+      "capability_presence": {"value": "none|partial|full|unknown", "reason": "string", "evidence_refs": []},
+      "fully_successful": {"value": "true|false|null", "reason": "string", "evidence_refs": []},
+      "prerequisites_satisfied": {"value": "true|false|null", "reason": "string", "evidence_refs": []},
+      "success_judgeable": {"value": "true|false", "reason": "string", "evidence_refs": []},
+      "requirement_audit": [
+        {
+          "kind": "operation|check",
+          "requirement": "exact string copied from the capability node",
+          "status": "satisfied|violated|unverified",
+          "reason": "string",
+          "evidence_refs": []
+        }
+      ]
+    }
+  ],
+  "evidence_limits": []
+}

@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SkillsBench Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+          <div class="brand">
+          <div class="brand-mark">SB</div>
+          <div>
+            <h1>SkillsBench Runner</h1>
+            <p>多 harness + DeepSeek 本地评测控制台</p>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="section-title">
+            <span>任务</span>
+            <button id="refreshTasks" class="icon-button" title="刷新任务列表" aria-label="刷新任务列表">↻</button>
+          </div>
+          <div class="task-filters">
+            <input id="taskSearch" class="input" placeholder="搜索任务、分类、来源" />
+            <div class="skill-count-filter">
+              <label>
+                <span>Skills 数量</span>
+                <select id="skillCountMode" class="input">
+                  <option value="any">任意</option>
+                  <option value="exact">等于</option>
+                  <option value="min">至少</option>
+                  <option value="max">至多</option>
+                  <option value="range">范围</option>
+                </select>
+              </label>
+              <label>
+                <span id="skillCountMinLabel">数量</span>
+                <input id="skillCountMin" class="input" type="number" min="0" step="1" placeholder="4" />
+              </label>
+              <label id="skillCountMaxField">
+                <span>最多</span>
+                <input id="skillCountMax" class="input" type="number" min="0" step="1" placeholder="8" />
+              </label>
+            </div>
+            <div class="filter-row filter-checks">
+              <label><input id="onlyPureSkills" type="checkbox" /> 纯 SKILL.md</label>
+              <label><input id="onlyLocalImage" type="checkbox" /> 本地镜像</label>
+            </div>
+            <div id="taskFilterSummary" class="filter-summary"></div>
+          </div>
+          <div id="taskList" class="task-list"></div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h2>运行管理</h2>
+            <p id="workspaceLabel">正在读取 workspace...</p>
+            <a class="back-link" href="/analysis.html">轨迹分析</a>
+            <a class="back-link" href="/repair.html">Skills 修复</a>
+            <a class="back-link" href="/repair-stage.html">Stage 调试</a>
+            <a class="back-link" href="/repair-trace.html">Repair LLM 轨迹</a>
+          </div>
+          <div class="status-strip">
+            <div><strong id="statRunning">0</strong><span>运行中</span></div>
+            <div><strong id="statPassed">0</strong><span>通过</span></div>
+            <div><strong id="statFailed">0</strong><span>失败</span></div>
+          </div>
+        </header>
+
+        <section class="control-band">
+          <div class="model-config-bar">
+            <label class="model-config-select">
+              <span>模型配置</span>
+              <select id="modelConfigSelect" class="input">
+                <option value="">未选择配置</option>
+              </select>
+            </label>
+            <label class="model-config-name">
+              <span>配置名</span>
+              <input id="modelConfigName" class="input" placeholder="例如 Camel Qwen / DeepSeek Flash" />
+            </label>
+            <label class="model-config-key">
+              <input id="saveApiKey" type="checkbox" />
+              保存 API Key
+            </label>
+            <button id="saveModelConfig" class="secondary-button" title="保存当前 harness、模型和接口配置">保存配置</button>
+            <button id="deleteModelConfig" class="secondary-button" title="删除当前选中的模型配置">删除</button>
+            <span id="modelConfigStatus" class="muted"></span>
+          </div>
+          <div class="form-grid">
+            <label>
+              <span>Harness</span>
+              <select id="agent" class="input">
+                <option value="claude-agent-acp">Claude Code</option>
+                <option value="openhands">OpenHands</option>
+                <option value="opencode">OpenCode</option>
+                <option value="codex-acp">Codex</option>
+              </select>
+            </label>
+            <label>
+              <span>模型</span>
+              <input id="model" class="input" value="deepseek-v4-flash" />
+            </label>
+            <label>
+              <span>Base URL</span>
+              <input id="baseUrl" class="input" value="https://api.deepseek.com/anthropic" />
+            </label>
+            <label>
+              <span>API Key</span>
+              <input id="apiKey" class="input" type="password" placeholder="留空则使用服务端环境变量" />
+            </label>
+            <label>
+              <span>重复次数</span>
+              <input id="repeats" class="input" type="number" min="1" max="50" value="5" />
+            </label>
+            <label>
+              <span>并行度</span>
+              <input id="parallel" class="input" type="number" min="1" max="8" value="2" />
+            </label>
+            <label>
+              <span>Skill 模式</span>
+              <select id="skillMode" class="input">
+                <option value="with-skill">with-skill</option>
+                <option value="no-skill">no-skill</option>
+              </select>
+            </label>
+            <label>
+              <span>运行模式</span>
+              <select id="promptMode" class="input">
+                <option value="standard">普通</option>
+                <option value="force-all-skills">强制运行全部 skill</option>
+              </select>
+            </label>
+            <label>
+              <span>Skills 库</span>
+              <select id="skillsLibrary" class="input">
+                <option value="">初始 skills 库</option>
+              </select>
+            </label>
+            <label>
+              <span>Idle timeout</span>
+              <input id="agentIdleTimeout" class="input" value="0" />
+            </label>
+            <label class="wide">
+              <span>Jobs 根目录</span>
+              <input id="jobsRoot" class="input" placeholder="留空自动生成 jobs/web-runner/..." />
+            </label>
+          </div>
+          <div class="actions">
+            <button id="startRun" class="primary-button" title="启动所选任务">▶ 启动</button>
+            <button id="stopLatest" class="secondary-button" title="停止最近的运行组">■ 停止最近组</button>
+          </div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="section-title">
+            <span>历史结果</span>
+            <div class="history-tools">
+              <input id="historySearch" class="input" placeholder="搜索 task / agent / model / path" />
+              <button id="refreshHistory" class="secondary-button" title="扫描 jobs 目录">刷新 jobs</button>
+            </div>
+          </div>
+          <div class="history-head">
+            <span>任务 / 路径</span>
+            <span>状态</span>
+            <span>分数 / 成功率</span>
+            <span>Skills 库</span>
+            <span>Agent</span>
+            <span>Model</span>
+            <span>耗时</span>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section class="dashboard-grid">
+          <div class="panel runs-panel">
+            <div class="section-title">
+              <span>运行队列</span>
+              <span id="selectedTaskLabel" class="muted">未选择任务</span>
+            </div>
+            <div id="groupsList" class="groups-list"></div>
+            <div id="runsTable" class="runs-table"></div>
+          </div>
+
+          <div class="panel log-panel">
+            <div class="section-title">
+              <span id="logTitle">日志</span>
+              <button id="clearLog" class="icon-button" title="清空当前视图日志" aria-label="清空日志">×</button>
+            </div>
+            <div id="logView" class="log-view">选择一个 run 查看实时日志。</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

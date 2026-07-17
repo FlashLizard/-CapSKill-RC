@@ -1,0 +1,36 @@
+{
+  "revise_existing_skill": {
+    "node_id": "N1",
+    "action": "revise_existing_skill",
+    "issue": "string",
+    "repairs": [
+      {
+        "suggestion_id": "string",
+        "skill_id": "string",
+        "goal": "string",
+        "changes": [
+          {"area": "trigger|procedure|verification|recovery|execution_support", "instruction": "string"}
+        ],
+        "evidence_refs": [{"traj_id": "string", "event_id": "string"}],
+        "constraints": []
+      }
+    ]
+  },
+  "add_new_skill": {
+    "node_id": "N1",
+    "action": "add_new_skill",
+    "issue": "string",
+    "new_skill": {
+      "suggestion_id": "string",
+      "skill_id": "string",
+      "goal": "string",
+      "triggers": [],
+      "procedure": [],
+      "verification": [],
+      "recovery": [],
+      "attached_files": [],
+      "evidence_refs": [{"traj_id": "string", "event_id": "string"}],
+      "constraints": []
+    }
+  }
+}

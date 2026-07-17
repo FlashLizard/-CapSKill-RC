@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stage Debug · SkillsBench Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="analysis-body">
+    <main class="analysis-shell repair-stage-shell">
+      <header class="trajectory-topbar">
+        <div>
+          <a class="back-link" href="/">返回任务面板</a>
+          <a class="back-link" href="/repair.html">Skills 修复</a>
+          <a class="back-link" href="/repair-trace.html">Repair LLM 轨迹</a>
+          <h1>Offline SkillRCA Stage 调试</h1>
+          <p id="stageSubtitle">按 Stage 生成 prompt、运行 repair LLM，并逐建议审查后提交到技能库副本。</p>
+        </div>
+      </header>
+
+      <section class="analysis-card repair-stage-preset-bar">
+        <div class="repair-stage-preset-heading">
+          <strong>配置预设</strong>
+          <span id="stagePresetStatus" class="muted">API Key 使用 Windows DPAPI 加密保存</span>
+        </div>
+        <select id="stagePresetSelect" class="input" aria-label="配置预设"></select>
+        <input id="stagePresetName" class="input" maxlength="80" placeholder="预设名称" aria-label="预设名称" />
+        <div class="repair-stage-preset-actions">
+          <button id="stagePresetLoad" class="secondary-button" type="button">加载</button>
+          <button id="stagePresetSave" class="primary-button" type="button">保存</button>
+          <button id="stagePresetDelete" class="secondary-button" type="button">删除</button>
+        </div>
+      </section>
+
+      <section class="repair-stage-config">
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>输入</h2>
+            <span id="stageInitStatus" class="muted"></span>
+          </div>
+          <div class="analysis-form-grid">
+            <label>
+              <span>Task</span>
+              <select id="stageTaskSelect" class="input"></select>
+            </label>
+            <label>
+              <span>源 Skills 库</span>
+              <select id="stageSkillsLibrary" class="input"></select>
+            </label>
+            <label>
+              <span>输出 Variant</span>
+              <input id="stageVariant" class="input" placeholder="stage-debug-..." />
+            </label>
+            <label>
+              <span>最多轨迹</span>
+              <input id="stageMaxTraces" class="input" type="number" min="1" max="30" value="5" />
+            </label>
+            <label class="wide">
+              <span>证据 jobs / artifact / rollout 路径</span>
+              <textarea id="stageTracePaths" class="input textarea" placeholder="每行一个路径"></textarea>
+            </label>
+            <div class="wide repair-stage-infer-row">
+              <button id="stageInferInputs" class="secondary-button" type="button">从轨迹推断 Task / Skills</button>
+              <span id="stageInferStatus" class="muted"></span>
+            </div>
+            <label class="inline-check">
+              <input id="stageForce" type="checkbox" />
+              覆盖同名目录
+            </label>
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>Repair LLM</h2>
+            <span id="stageRunStatus" class="muted"></span>
+          </div>
+          <div class="analysis-form-grid">
+            <label>
+              <span>强模型</span>
+              <input id="stageStrongModel" class="input" value="gpt-5.5" />
+            </label>
+            <label>
+              <span>并行轨迹</span>
+              <input id="stageTraceWorkers" class="input" type="number" min="1" max="20" value="5" />
+            </label>
+            <label class="wide">
+              <span>Base URL</span>
+              <input id="stageStrongBaseUrl" class="input" value="https://api.camel-hub.com" />
+            </label>
+            <label>
+              <span>Prompt 字符上限</span>
+              <input id="stageMaxPromptChars" class="input" type="number" min="20000" max="500000" value="220000" />
+            </label>
+            <label>
+              <span>Timeout 秒</span>
+              <input id="stageStrongTimeout" class="input" type="number" min="30" max="3600" value="1800" />
+            </label>
+            <label>
+              <span>连续运行调用上限</span>
+              <input id="stage7MaxOperations" class="input" type="number" min="1" max="1000" value="30" />
+            </label>
+            <label>
+              <span>Stage 8 修复粒度</span>
+              <select id="stage7RepairMode" class="input">
+                <option value="per_suggestion">逐建议事务</option>
+                <option value="skill_package">同 Skill 建议包</option>
+              </select>
+            </label>
+            <label>
+              <span>每个建议包的建议数上限</span>
+              <input id="stage7SkillPackageSize" class="input" type="number" min="1" max="100" value="3" disabled />
+            </label>
+            <label>
+              <span>新增 Skill 合并阈值（0=自动）</span>
+              <input id="stageAddSkillMergeThreshold" class="input" type="number" min="0" max="1000" value="0" />
+            </label>
+            <label>
+              <span>新增 Skill 目标数（0=自动）</span>
+              <input id="stageAddSkillTargetCount" class="input" type="number" min="0" max="1000" value="0" />
+            </label>
+            <label>
+              <span>新增 Skill 硬上限</span>
+              <input id="stageMaxNewSkills" class="input" type="number" min="0" max="1000" value="2" />
+            </label>
+            <label>
+              <span>Skill 文档字数上限</span>
+              <input id="stageSkillWordLimit" class="input" type="number" min="100" max="20000" value="1200" />
+            </label>
+            <label class="wide">
+              <span>API Key</span>
+              <input id="stageStrongApiKey" class="input" type="password" placeholder="可随配置预设加密保存" />
+            </label>
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <div class="analysis-card-title">
+            <h2>Review LLM</h2>
+          </div>
+          <div class="analysis-form-grid">
+            <label class="inline-check wide">
+              <input id="stageSeparateReviewLlm" type="checkbox" />
+              使用独立模型审查 Stage 8 候选
+            </label>
+            <label>
+              <span>审查模型</span>
+              <input id="stageReviewModel" class="input" placeholder="留空则复用 Repair 模型" disabled />
+            </label>
+            <label>
+              <span>审查 API Key</span>
+              <input id="stageReviewApiKey" class="input" type="password" placeholder="可随配置预设加密保存" disabled />
+            </label>
+            <label class="wide">
+              <span>审查 Base URL</span>
+              <input id="stageReviewBaseUrl" class="input" placeholder="留空则复用 Repair Base URL" disabled />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="analysis-card repair-stage-runbar">
+        <label>
+          <span>Stage 运行目录</span>
+          <select id="stageRunSelect" class="input"></select>
+        </label>
+        <input id="stageOutputDir" class="input" placeholder="repair-runs/<task>/<variant>" />
+        <button id="stageInit" class="primary-button">初始化</button>
+        <button id="stageRefresh" class="secondary-button">刷新</button>
+      </section>
+
+      <section class="repair-stage-layout">
+        <aside class="analysis-card repair-stage-list-card">
+          <div class="analysis-card-title">
+            <h2>Stages</h2>
+            <span id="stageCount" class="muted"></span>
+          </div>
+          <div id="stageList" class="repair-stage-list"></div>
+          <div class="analysis-card-title repair-stage-job-title">
+            <h2>后台 Job</h2>
+            <button id="stageStopJob" class="secondary-button">停止</button>
+          </div>
+          <div id="stageJobs" class="repair-stage-jobs"></div>
+        </aside>
+
+        <section class="analysis-card repair-stage-detail-card">
+          <div class="analysis-card-title repair-stage-titlebar">
+            <div>
+              <h2 id="stageDetailTitle">详情</h2>
+              <span id="stageDetailMeta" class="muted"></span>
+            </div>
+            <div class="repair-stage-actions">
+              <a id="stageViewTrajectory" class="secondary-button disabled" href="#" target="_blank" rel="noreferrer" aria-disabled="true">查看当前轨迹</a>
+              <button id="stagePrompt" class="secondary-button">生成 Prompt</button>
+              <button id="stageRun" class="primary-button">运行一步</button>
+              <button id="stageRunUntil" class="primary-button">运行至完成</button>
+              <button id="stagePause" class="secondary-button">暂停</button>
+            </div>
+          </div>
+          <div id="stageTabs" class="repair-trace-tabs"></div>
+          <div id="stageDetail" class="repair-stage-detail">
+            <div class="detail-empty">选择一个 stage。</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/repair-stage.js" type="module"></script>
+  </body>
+</html>

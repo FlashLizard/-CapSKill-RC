@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Repair LLM Trace · SkillsBench Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="analysis-body">
+    <main class="analysis-shell repair-trace-shell">
+      <header class="trajectory-topbar">
+        <div>
+          <a class="back-link" href="/">返回任务面板</a>
+          <a class="back-link" href="/repair.html">Skills 修复</a>
+          <a class="back-link" href="/repair-stage.html">Stage 调试</a>
+          <a class="back-link" href="/analysis.html">轨迹分析</a>
+          <h1>Repair LLM 交互轨迹</h1>
+          <p id="traceSubtitle">扫描 repair-runs 下的 LLM request、response、parsed 输出和修复产物。</p>
+        </div>
+      </header>
+
+      <section class="analysis-card repair-trace-toolbar">
+        <div>
+          <label>
+            <span>筛选修复运行</span>
+            <input id="traceRunSearch" class="input" placeholder="搜索 task、variant、路径、模型" />
+          </label>
+        </div>
+        <div>
+          <label>
+            <span>页面内文本高亮</span>
+            <input id="traceTextSearch" class="input" placeholder="搜索 prompt、response、patch 内容" />
+          </label>
+        </div>
+        <button id="refreshTraceRuns" class="secondary-button">刷新</button>
+      </section>
+
+      <section class="repair-trace-layout">
+        <aside class="analysis-card repair-trace-list-card">
+          <div class="analysis-card-title">
+            <h2>修复运行</h2>
+            <span id="traceRunCount" class="muted"></span>
+          </div>
+          <div id="traceRunList" class="repair-trace-run-list"></div>
+        </aside>
+
+        <section class="analysis-card repair-trace-detail-card">
+          <div class="analysis-card-title repair-trace-titlebar">
+            <div>
+              <h2 id="traceDetailTitle">详情</h2>
+              <span id="traceDetailMeta" class="muted"></span>
+            </div>
+          </div>
+          <div id="traceTabs" class="repair-trace-tabs"></div>
+          <div id="traceDetail" class="repair-trace-detail">
+            <div class="detail-empty">选择一个 Repair LLM 轨迹。</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/repair-trace.js" type="module"></script>
+  </body>
+</html>

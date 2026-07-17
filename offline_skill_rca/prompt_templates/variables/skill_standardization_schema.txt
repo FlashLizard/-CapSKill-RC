@@ -1,0 +1,15 @@
+{
+  "title": "string",
+  "intent": "string",
+  "triggers": [],
+  "inputs": [],
+  "outputs": [],
+  "procedure": [],
+  "verification": [],
+  "recovery": [],
+  "tools_or_templates": [],
+  "limits": [],
+  "attached_files": [
+    {"path": "string", "type": "code|document|others", "content": "string"}
+  ]
+}

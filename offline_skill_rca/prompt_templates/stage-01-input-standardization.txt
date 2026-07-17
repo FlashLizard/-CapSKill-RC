@@ -1,0 +1,8 @@
+Stage 1 of Offline SkillRCA is split into multiple LLM rounds:
+
+- Stage 1a standardizes task_description only.
+- Stage 1b standardizes one Skill file per LLM call.
+
+There is no extra aggregation LLM call. Downstream stages receive Stage 1a and Stage 1b outputs directly.
+
+Do not use this wrapper template for a repair LLM call directly. Edit the Stage 1a/1b templates instead.
