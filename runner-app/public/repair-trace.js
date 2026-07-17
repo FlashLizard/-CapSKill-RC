@@ -184,7 +184,7 @@ function renderRuns() {
     const selected = run.runDir === state.selectedRunDir ? " selected" : "";
     const counts = run.counts || {};
     const statusClass = run.statusCode && run.statusCode >= 400 ? "status-error" : "status-ok";
-    return `
+    return `<div class="repair-trace-run-action">
       <button class="repair-trace-run${selected}" data-run-dir="${escapeAttr(run.runDir)}">
         <div class="repair-trace-run-main">
           <strong title="${escapeAttr(run.taskName)}">${escapeHtml(run.taskName || "(unknown task)")}</strong>
@@ -201,7 +201,8 @@ function renderRuns() {
           <span>${counts.patches || 0} patches</span>
         </div>
       </button>
-    `;
+      <button class="history-delete-button" type="button" title="删除该修复流程记录" data-delete-trace-run="${escapeAttr(run.runDir)}">×</button>
+    </div>`;
   }).join("");
 }
 
@@ -1005,6 +1006,28 @@ els.textSearch.addEventListener("input", (event) => {
 els.refresh.addEventListener("click", () => loadRuns());
 
 els.runList.addEventListener("click", (event) => {
+  const deleteButton = event.target.closest("[data-delete-trace-run]");
+  if (deleteButton) {
+    event.stopPropagation();
+    const runDir = deleteButton.dataset.deleteTraceRun || "";
+    if (!window.confirm("确定删除这个 repair 流程记录吗？所有交互轨迹和产物索引都会被删除。")) return;
+    deleteButton.disabled = true;
+    fetch("/api/repair-runs", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ runDir }),
+    }).then(async (response) => {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      state.selectedRunDir = "";
+      state.detail = null;
+      await loadRuns();
+    }).catch((error) => {
+      window.alert(`删除失败：${error.message}`);
+      deleteButton.disabled = false;
+    });
+    return;
+  }
   const row = event.target.closest("[data-run-dir]");
   if (!row) return;
   loadDetail(row.dataset.runDir);

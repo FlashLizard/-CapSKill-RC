@@ -507,6 +507,8 @@ const state = {
   placeholderPreviewRequestId: 0,
 };
 
+const pageQuery = new URLSearchParams(window.location.search);
+
 // 浏览器仍保留最近 2500 行用于实时追踪，但 DOM 只展示末尾 500 行。
 // 这可以防止长时间运行的 Stage 8 因重复构建超大 <pre> 而阻塞主线程。
 const MAX_STORED_STAGE_LOG_LINES = 2500;
@@ -556,6 +558,7 @@ const els = {
   outputDir: $("stageOutputDir"),
   init: $("stageInit"),
   refresh: $("stageRefresh"),
+  deleteRun: $("stageDeleteRun"),
   stageList: $("stageList"),
   stageCount: $("stageCount"),
   jobs: $("stageJobs"),
@@ -643,9 +646,9 @@ async function fetchJson(url) {
   return data;
 }
 
-async function postJson(url, body) {
+async function postJson(url, body, method = "POST") {
   const res = await fetch(url, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -974,12 +977,14 @@ function renderRunSelect() {
     ...options,
   ].join("");
   els.runSelect.value = state.selectedRunDir;
+  els.deleteRun.disabled = !state.selectedRunDir;
 }
 
 async function loadStatus() {
   const outputDir = currentRunDir();
   if (!outputDir) {
     state.status = null;
+    els.deleteRun.disabled = true;
     renderStages();
     renderDetail();
     return;
@@ -991,6 +996,7 @@ async function loadStatus() {
     state.status = data.status;
     state.selectedRunDir = data.status?.runDir || outputDir;
     els.outputDir.value = state.selectedRunDir;
+    els.deleteRun.disabled = false;
     applyManifestToForm(state.status?.manifest || {});
     els.subtitle.textContent = `当前运行目录：${state.selectedRunDir}`;
     renderTraceSelection({
@@ -1011,9 +1017,29 @@ async function loadStatus() {
     renderDetail();
   } catch (error) {
     state.status = null;
+    els.deleteRun.disabled = !state.selectedRunDir;
     els.subtitle.textContent = `读取失败：${error.message}`;
     renderStages();
     renderDetail();
+  }
+}
+
+async function deleteCurrentRepairRun() {
+  const runDir = currentRunDir();
+  if (!runDir) return;
+  if (!window.confirm("确定删除当前 repair 流程记录吗？其 prompt、response、stage 输出和日志都会被删除。")) return;
+  els.deleteRun.disabled = true;
+  try {
+    const data = await postJson("/api/repair-runs", { runDir }, "DELETE");
+    state.selectedRunDir = "";
+    state.status = null;
+    state.fileCache.clear();
+    els.outputDir.value = "";
+    els.runStatus.textContent = `已删除：${data.deletedPath}`;
+    await loadRuns();
+  } catch (error) {
+    els.runStatus.textContent = `删除失败：${error.message}`;
+    els.deleteRun.disabled = false;
   }
 }
 
@@ -2812,6 +2838,7 @@ function bindEvents() {
     state.fileCache.clear();
     await loadStatus();
   });
+  els.deleteRun.addEventListener("click", () => deleteCurrentRepairRun());
   els.refresh.addEventListener("click", async () => {
     state.fileCache.clear();
     await loadRuns();
@@ -2916,6 +2943,11 @@ async function init() {
   els.variant.value = defaultVariant();
   await loadTasks();
   await loadPresetList();
+  const requestedRunDir = pageQuery.get("runDir") || pageQuery.get("outputDir");
+  if (requestedRunDir) {
+    state.selectedRunDir = requestedRunDir.replace(/\\/g, "/");
+    els.outputDir.value = state.selectedRunDir;
+  }
   await loadRuns();
 }
 

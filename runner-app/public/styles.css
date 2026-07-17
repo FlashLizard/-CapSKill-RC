@@ -448,6 +448,28 @@ a.secondary-button {
   background: #f5f8fb;
 }
 
+.history-delete-button {
+  margin-left: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.history-delete-button:hover {
+  background: #fff0f0;
+  color: #a32828;
+}
+
+.history-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
 .history-child-row {
   padding-left: 28px;
   background: #fbfcfd;
@@ -1400,6 +1422,17 @@ body {
   background: #f5f8fb;
 }
 
+.repair-list-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.repair-list-action-row > .history-delete-button {
+  margin-left: 0;
+}
+
 .repair-job-row.selected {
   border-color: var(--blue);
   background: #e8f1fb;
@@ -1552,6 +1585,17 @@ body {
   gap: 8px;
   text-align: left;
   cursor: pointer;
+}
+
+.repair-trace-run-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.repair-trace-run-action > .history-delete-button {
+  margin-left: 0;
 }
 
 .repair-trace-run:hover {

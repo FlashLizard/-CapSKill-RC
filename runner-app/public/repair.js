@@ -154,7 +154,7 @@ function jobSummary(job) {
 
 function reportSummary(report) {
   const selected = report.reportPath === state.selectedReportPath;
-  return `
+  return `<div class="repair-list-action-row">
     <button class="repair-job-row${selected ? " selected" : ""}" data-report-path="${escapeHtml(report.reportPath)}">
       <div>
         <strong>${escapeHtml((report.task || "").split("/").at(-1) || report.variant || "report")}</strong>
@@ -162,7 +162,8 @@ function reportSummary(report) {
       </div>
       <span class="badge ${report.usedFallback ? "warn" : "pass"}">${report.usedFallback ? "fallback" : "llm"}</span>
     </button>
-  `;
+    <button class="history-delete-button" type="button" title="删除该 repair 流程记录" data-delete-repair-dir="${escapeHtml(report.runDir || report.reportDir || "")}">×</button>
+  </div>`;
 }
 
 function renderLists() {
@@ -185,6 +186,31 @@ function renderLists() {
       await fetchReport(state.selectedReportPath);
       renderDetail();
       renderLists();
+    });
+  });
+  elements.reportsList.querySelectorAll("[data-delete-repair-dir]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const runDir = button.dataset.deleteRepairDir || "";
+      if (!runDir) return;
+      if (!window.confirm("确定删除这个 repair 流程记录吗？其 repair-runs 轨迹和报告会被删除。")) return;
+      button.disabled = true;
+      try {
+        const response = await fetch("/api/repair-runs", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ runDir }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        state.selectedReportPath = "";
+        state.reports = data.reports || [];
+        renderLists();
+        renderDetail();
+      } catch (error) {
+        window.alert(`删除失败：${error.message}`);
+        button.disabled = false;
+      }
     });
   });
 }
@@ -250,9 +276,31 @@ function renderReportDetail(reportPath) {
         strongModel: report.strongModel ? `${report.strongModel.provider}/${report.strongModel.model}` : "",
         report: report.reportPath,
       }) : ""}
+      ${report?.runDir ? `<div class="detail-actions"><a class="secondary-button detail-link" href="/repair-stage.html?runDir=${encodeURIComponent(report.runDir)}">加载到 Stage Debug</a><button class="secondary-button" type="button" id="deleteSelectedRepairReport">删除流程记录</button></div>` : ""}
       <pre class="repair-report-text">${escapeHtml(text)}</pre>
     </div>
   `;
+  const deleteButton = $("deleteSelectedRepairReport");
+  if (deleteButton) {
+    deleteButton.addEventListener("click", async () => {
+      if (!report?.runDir || !window.confirm("确定删除这个 repair 流程记录吗？")) return;
+      try {
+        const response = await fetch("/api/repair-runs", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ runDir: report.runDir }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        state.selectedReportPath = "";
+        state.reports = data.reports || [];
+        renderLists();
+        renderDetail();
+      } catch (error) {
+        window.alert(`删除失败：${error.message}`);
+      }
+    });
+  }
 }
 
 function renderDetail() {

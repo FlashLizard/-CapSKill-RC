@@ -1557,6 +1557,69 @@ function resolveArtifactPath(relPath) {
   return resolved;
 }
 
+function normalizedRelativePath(value) {
+  return String(value || "").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+}
+
+function isSameOrNestedPath(left, right) {
+  const a = normalizedRelativePath(left);
+  const b = normalizedRelativePath(right);
+  return Boolean(a && b && (a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)));
+}
+
+function removableDirectory(relativePath, rootPrefix) {
+  const relative = normalizedRelativePath(relativePath);
+  if (!relative.startsWith(`${rootPrefix}/`) || relative === rootPrefix) {
+    throw new Error(`Only records under ${rootPrefix}/ can be deleted`);
+  }
+  const resolved = resolveArtifactPath(relative);
+  return { relative, resolved };
+}
+
+function activeRecordOverlaps(relativePath) {
+  const activeRunPaths = state.runs
+    .filter((run) => ["pending", "running", "stopping"].includes(run.status))
+    .map((run) => run.jobsDir)
+    .filter(Boolean);
+  const activeGroupPaths = state.groups
+    .filter((group) => ["pending", "running", "stopping"].includes(group.status))
+    .map((group) => group.jobsRoot)
+    .filter(Boolean);
+  const activeRepairPaths = state.repairJobs
+    .filter((job) => ["pending", "running", "stopping"].includes(job.status))
+    .map((job) => job.reportDir)
+    .filter(Boolean);
+  const activeStagePaths = state.stageJobs
+    .filter((job) => ["pending", "running", "stopping"].includes(job.status))
+    .map((job) => job.outputDir)
+    .filter(Boolean);
+  return [
+    ...activeRunPaths,
+    ...activeGroupPaths,
+    ...activeRepairPaths,
+    ...activeStagePaths,
+  ].some((activePath) => isSameOrNestedPath(relativePath, activePath));
+}
+
+async function deleteRecordDirectory(relativePath, rootPrefix) {
+  const target = removableDirectory(relativePath, rootPrefix);
+  if (activeRecordOverlaps(target.relative)) {
+    throw new Error("Cannot delete a running or pending record; stop it first");
+  }
+  await fsp.rm(target.resolved, { recursive: true, force: true });
+  return target.relative;
+}
+
+function forgetDeletedHistoryRecord(type, relativePath) {
+  state.runs = state.runs.filter((run) => !isSameOrNestedPath(run.jobsDir, relativePath));
+  if (type === "group") {
+    state.groups = state.groups.filter((group) => !isSameOrNestedPath(group.jobsRoot, relativePath));
+  } else {
+    const groupIds = new Set(state.runs.map((run) => run.groupId));
+    state.groups = state.groups.filter((group) => groupIds.has(group.id));
+  }
+}
+
 async function fileInfo(filePath, baseDir) {
   try {
     const stat = await fsp.stat(filePath);
@@ -3041,6 +3104,7 @@ async function scanRepairReports() {
         manifests.push({
           id: toPosixRelative(fullPath),
           manifestPath: toPosixRelative(fullPath),
+          runDir: manifest.reportDir || toPosixRelative(path.dirname(fullPath)),
           reportPath: manifest.reportDir ? `${manifest.reportDir}/README.md` : toPosixRelative(path.join(path.dirname(fullPath), "README.md")),
           modifiedAt: stat.mtime.toISOString(),
           ...manifest,
@@ -3482,6 +3546,24 @@ async function handleApi(req, res, url) {
     });
   }
 
+  if (req.method === "DELETE" && url.pathname === "/api/history") {
+    const body = await parseBody(req);
+    const type = String(body.type || "run").trim();
+    const target = type === "group"
+      ? body.groupKey || body.artifactDir
+      : body.artifactDir || (body.summaryPath ? path.dirname(String(body.summaryPath)) : "");
+    if (!target) return sendError(res, 400, "History record path is required");
+    try {
+      const deletedPath = await deleteRecordDirectory(target, "jobs");
+      forgetDeletedHistoryRecord(type, deletedPath);
+      state.history = await scanHistory();
+      emit("snapshot", snapshot());
+      return sendJson(res, 200, { ok: true, deletedPath, history: state.history });
+    } catch (error) {
+      return sendError(res, 409, error.message || "Failed to delete history record");
+    }
+  }
+
   if (req.method === "GET" && url.pathname === "/api/repair/jobs") {
     return sendJson(res, 200, {
       repairJobs: state.repairJobs.map(publicRepairJob),
@@ -3516,6 +3598,26 @@ async function handleApi(req, res, url) {
       runs: await scanStageDebugRuns(),
       jobs: state.stageJobs.map(publicStageJob),
     });
+  }
+
+  if (req.method === "DELETE" && url.pathname === "/api/repair-runs") {
+    const body = await parseBody(req);
+    const runDir = String(body.runDir || body.outputDir || body.reportDir || "").trim();
+    if (!runDir) return sendError(res, 400, "Repair run directory is required");
+    try {
+      const deletedPath = await deleteRecordDirectory(runDir, "repair-runs");
+      state.repairJobs = state.repairJobs.filter((job) => !isSameOrNestedPath(job.reportDir, deletedPath));
+      state.stageJobs = state.stageJobs.filter((job) => !isSameOrNestedPath(job.outputDir, deletedPath));
+      emit("snapshot", snapshot());
+      return sendJson(res, 200, {
+        ok: true,
+        deletedPath,
+        reports: await scanRepairReports(),
+        stageRuns: await scanStageDebugRuns(),
+      });
+    } catch (error) {
+      return sendError(res, 409, error.message || "Failed to delete repair run");
+    }
   }
 
   if (req.method === "GET" && url.pathname === "/api/repair-stage/presets") {

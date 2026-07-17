@@ -691,6 +691,7 @@ function renderHistory() {
               <span class="badge">${label}</span>
               ${isGroup ? `<span class="expand-mark">${expanded ? "▾" : "▸"}</span>` : ""}
               ${escapeHtml(item.taskName || "(unknown)")}
+              <button class="history-delete-button" type="button" title="删除这条记录" data-delete-history-id="${escapeHtml(item.id)}" data-delete-history-kind="${escapeHtml(item.type)}">×</button>
             </div>
             <div class="history-subtitle">${escapeHtml(item.summaryPath)}</div>
           </div>
@@ -710,7 +711,7 @@ function renderHistory() {
           rows.push(`
             <div class="history-row history-child-row${childSelected}" data-history-id="${escapeHtml(run.id)}" data-history-kind="run">
               <div class="history-main">
-                <div class="history-title"><span class="badge">JOB ${run.index}</span> ${escapeHtml(run.jobName || item.taskName || "(unknown)")}</div>
+                <div class="history-title"><span class="badge">JOB ${run.index}</span> ${escapeHtml(run.jobName || item.taskName || "(unknown)")}<button class="history-delete-button" type="button" title="删除这条记录" data-delete-history-id="${escapeHtml(run.id)}" data-delete-history-kind="run">×</button></div>
                 <div class="history-subtitle">${escapeHtml(run.summaryPath)}</div>
               </div>
               <div>${runStatusBadge(childStatus)}</div>
@@ -744,6 +745,36 @@ function renderHistory() {
         renderAll();
         await fetchJobDetail(entry);
         renderAll();
+      }
+    });
+  });
+  elements.historyList.querySelectorAll("[data-delete-history-id]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const entry = findHistoryEntry(button.dataset.deleteHistoryId || "");
+      if (!entry) return;
+      const label = entry.type === "group" ? "整个重复运行组及其内部 jobs" : "这条 job 记录";
+      if (!window.confirm(`确定删除${label}吗？磁盘上的 jobs 轨迹也会被删除。`)) return;
+      button.disabled = true;
+      try {
+        const response = await fetch("/api/history", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: entry.type,
+            groupKey: entry.groupKey,
+            artifactDir: entry.artifactDir,
+            summaryPath: entry.summaryPath,
+          }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        state.history = data.history || [];
+        state.selectedHistoryId = null;
+        renderAll();
+      } catch (error) {
+        window.alert(`删除失败：${error.message}`);
+        button.disabled = false;
       }
     });
   });
