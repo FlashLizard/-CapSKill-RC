@@ -10,6 +10,9 @@ const APP_DIR = path.dirname(__filename);
 const ROOT = path.resolve(APP_DIR, "..");
 const PUBLIC_DIR = path.join(APP_DIR, "public");
 const PORT = Number(process.env.SKILLSBENCH_RUNNER_PORT || 5198);
+const PREBUILT_IMAGE_CONFIG_PATH = process.env.SKILLSBENCH_PREBUILT_IMAGES
+  ? path.resolve(ROOT, process.env.SKILLSBENCH_PREBUILT_IMAGES)
+  : path.join(APP_DIR, "prebuilt-images.json");
 
 const state = {
   tasks: [],
@@ -248,8 +251,7 @@ function removeComposeBuildFromOverlay(overlayTaskAbs) {
 
 function loadPrebuiltImages() {
   try {
-    const file = path.join(APP_DIR, "prebuilt-images.json");
-    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(fs.readFileSync(PREBUILT_IMAGE_CONFIG_PATH, "utf8"));
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
     return {};

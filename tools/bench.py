@@ -7,6 +7,7 @@ Web 控制台适合交互式并行评测；本脚本为 Linux CI、迁移后的 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -16,6 +17,45 @@ from pathlib import Path
 
 def root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+def prebuilt_image_config_path() -> Path:
+    """返回可提交、可迁移的 task -> Docker image 注册表路径。"""
+    configured = os.getenv("SKILLSBENCH_PREBUILT_IMAGES", "").strip()
+    return Path(configured).expanduser().resolve() if configured else root() / "runner-app" / "prebuilt-images.json"
+
+
+def load_prebuilt_images() -> dict[str, str]:
+    """读取镜像注册表；文件不存在时从空注册表开始。"""
+    path = prebuilt_image_config_path()
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"Invalid prebuilt image registry: {path}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise SystemExit(f"Prebuilt image registry must be a JSON object: {path}")
+    return {str(key): str(value).strip() for key, value in data.items() if str(value).strip()}
+
+
+def save_prebuilt_images(images: dict[str, str]) -> None:
+    """以稳定排序写回镜像注册表，避免迁移时产生无意义 diff。"""
+    path = prebuilt_image_config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(dict(sorted(images.items())), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def default_prebuilt_image(task: str) -> str:
+    """为未登记 task 生成合法、稳定且跨机器可复用的镜像标签。"""
+    slug = task.strip().lower().replace("_", "-")
+    slug = "".join(char if char.isalnum() or char in "-." else "-" for char in slug).strip("-.")
+    return f"skillsbench-local-{slug}:latest"
+
+
+def image_for_task(task: str, requested: str = "") -> str:
+    """优先使用显式镜像，其次使用注册表，最后生成稳定默认值。"""
+    return requested.strip() or load_prebuilt_images().get(task) or default_prebuilt_image(task)
 
 
 def task_dir(task: str) -> Path:
@@ -53,11 +93,45 @@ def build(args: argparse.Namespace) -> int:
     dockerfile = directory / "Dockerfile"
     if not dockerfile.exists():
         raise SystemExit(f"Task has no environment/Dockerfile: {directory}")
-    image = args.image or f"skillsbench/{args.task.replace('_', '-').lower()}:local"
+    image = image_for_task(args.task, args.image or "")
     command = ["docker", "build", "--tag", image, "--file", str(dockerfile), str(directory)]
     print("+", " ".join(command))
     subprocess.run(command, check=True)
+    if args.register:
+        images = load_prebuilt_images()
+        images[args.task] = image
+        save_prebuilt_images(images)
+        print(f"Registered {args.task} -> {image} in {prebuilt_image_config_path()}")
     print(f"Built image: {image}")
+    return 0
+
+
+def image_status(args: argparse.Namespace) -> int:
+    """检查注册表中的镜像是否已经存在于当前机器。"""
+    require("docker")
+    images = load_prebuilt_images()
+    selected = {args.task: images[args.task]} if args.task and args.task in images else images
+    if args.task and args.task not in images:
+        print(f"{args.task}: not registered")
+        return 1
+    missing = 0
+    for task, image in sorted(selected.items()):
+        present = subprocess.run(
+            ["docker", "image", "inspect", image],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        ).returncode == 0
+        print(f"{task}: {'ready' if present else 'missing'} -> {image}")
+        if not present:
+            missing += 1
+    return 1 if missing else 0
+
+
+def image_list(_: argparse.Namespace) -> int:
+    """列出当前仓库提交的镜像注册表。"""
+    for task, image in sorted(load_prebuilt_images().items()):
+        print(f"{task}\t{image}")
     return 0
 
 
@@ -111,6 +185,16 @@ def parse_args() -> argparse.Namespace:
     build_parser = sub.add_parser("build")
     build_parser.add_argument("--task", required=True)
     build_parser.add_argument("--image")
+    build_parser.add_argument(
+        "--no-register",
+        dest="register",
+        action="store_false",
+        help="构建但不更新 runner-app/prebuilt-images.json",
+    )
+    build_parser.set_defaults(register=True)
+    images_parser = sub.add_parser("images", help="查看和检查 task 预构建镜像注册表")
+    images_parser.add_argument("action", choices=["list", "status"])
+    images_parser.add_argument("--task", help="只查看一个 task")
     run_parser = sub.add_parser("run")
     run_parser.add_argument("--task", required=True)
     run_parser.add_argument("--agent", default="claude-agent-acp")
@@ -142,6 +226,8 @@ def main() -> int:
         return check(args)
     if args.command == "build":
         return build(args)
+    if args.command == "images":
+        return image_list(args) if args.action == "list" else image_status(args)
     return run_bench(args)
 
 

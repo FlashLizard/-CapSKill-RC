@@ -52,9 +52,36 @@ python3 tools/dataset.py install --mode copy --force
 ```bash
 python3 tools/bench.py check
 python3 tools/bench.py build --task r2r-mpc-control
+python3 tools/bench.py images status --task r2r-mpc-control
 ```
 
-这只构建指定 task 的 `environment/Dockerfile`，不会扫描和构建整个数据集。构建结果的镜像名默认为 `skillsbench/<task>:local`。
+`build` 只构建指定 task 的 `environment/Dockerfile`，不会扫描和构建整个数据集。它会优先复用
+`runner-app/prebuilt-images.json` 中已经登记的镜像名；如果 task 尚未登记，则生成稳定的
+`skillsbench-local-<task>:latest` 标签，并自动登记。Web 控制台启动评测时会读取这个注册表，
+把已构建镜像注入 task overlay，然后在运行期单独传入 skill mode 和 skills library，因此切换
+`no-skill`、`with-skill`、`force-skill` 或不同 skills 库不需要重新构建镜像。
+
+常用命令：
+
+```bash
+# 查看仓库中登记的 task -> image 映射
+python3 tools/bench.py images list
+
+# 检查当前机器哪些登记镜像已经存在
+python3 tools/bench.py images status
+
+# 只为某个 task 构建一次，并把镜像名写入注册表
+python3 tools/bench.py build --task r2r-mpc-control
+
+# 使用自定义镜像名构建并登记
+python3 tools/bench.py build --task r2r-mpc-control --image my-registry/skillsbench/r2r:2026-07
+```
+
+迁移到另一台机器时，注册表文件会随 Git 一起迁移，但 Docker 镜像本身不会进入 Git。
+在新机器安装数据集并完成 Docker 登录后，执行 `tools/bench.py images status`；对显示为
+`missing` 的 task 再运行一次 `tools/bench.py build --task <task>` 即可。构建完成后，Web
+会自动使用同一个镜像标签。若需要把注册表放到仓库外，可设置
+`SKILLSBENCH_PREBUILT_IMAGES` 指向一个 JSON 文件，Windows 和 Linux 均支持。
 
 ## 用自定义 OpenAI 兼容供应商探针测试
 
